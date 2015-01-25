@@ -84,7 +84,7 @@
         
         <div id="tableSections" style="margin-top:50px; width:90%; font-family:Nipcen; font-size:38px; "></div>
 
-        <div id="answer" style="margin-top:50px; display:none; width:600px; margin-left:auto; margin-right:auto; padding-bottom:100px; box-shadow: 5px 5px 2px #888888; -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none; margin-bottom:100px; background-color:#efefef; height:3000px; position:relative; " unselectable='on' onselectstart='return false;' onmousedown='return false;'>
+        <div id="answer" style="margin-top:50px; display:none; width:600px; margin-left:auto; margin-right:auto; padding-bottom:100px; box-shadow: 5px 5px 2px #888888; -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none; margin-bottom:100px; background-color:#efefef; position:relative; height:1000px;" unselectable='on' onselectstart='return false;' onmousedown='return false;'>
             
             <div id="colorCategory" style="background-color:transparent; position:absolute; height:36px; font-size:24px; top:45px; left:15px; color:white; z-index:100; font-family:Nipcen; text-indent:0px;   overflow:hidden; box-shadow: 2px 2px 1px #888888;">
                 <span id="colorCategoryName" style="background-color:transparent; height:36px; font-size:24px; color:white; z-index:100; font-family:Nipcen; box-shadow: 2px 2px 1px #888888; float:left; padding-left:10px; padding-right:10px;"></span>
@@ -104,11 +104,15 @@
                     border-color: transparent transparent transparent #007bff; float:right"></span-->
             </div>
             
-            <div style="background-color:white; border-radius:5px; position:absolute; left:20px; top:20px; right:20px; bottom:20px; z-index:90;">
+            <div style="background-color:white; border-radius:5px; position:absolute; left:20px; top:20px; right:20px; bottom:20px;">
                 
                 <div id="productName" style="font-family:BitterBold; font-size:30px; line-height:33px; color:black; margin-left:20px; margin-right:100px;  margin-top:75px;"></div>
                 
                 <div id="productDescription" style="font-family:Bitter; font-size:18px; color:black; margin-left:20px; margin-right:20px; margin-top:8px;"></div>
+                
+                <center>
+                    <img id="ikea" src="icons/ikea.png" style="display:none; margin-top:30px; z-index:100; max-width:500px;"/>
+                </center>
                 
                 <img src="icons/food1.png" id="imageCategory" style="position:absolute; top:15px; right:20px; max-height:64px; max-width:64px; z-index:100;"/>
                 
@@ -130,7 +134,7 @@
                         
                         <div style="margin-top:35px;" id="vegan">
                             <img id="amount" src="icons/vegan.png" style="max-height:64px; max-width:64px;"/>
-                            <div style="font-size:15px; color:#019323; font-family:Bitter">Vegan & Detox</div>
+                            <div style="font-size:15px; color:#019323; font-family:BitterBold">Vegan & Detox</div>
                         </div>
                         
                         <div id="forbidden"></div>
@@ -186,6 +190,14 @@
 
     <script id='script'>
         
+        var colors = ["", "#e96e5a", "#ff9933", "#cccc33", "#66cc00", "#019323"];
+        var foodCategory = ["", "Животный белок: мясо", "Животный белок: птица", "Животный белок: рыба", "Животный белок: морепродукты", "Овощ", "Ягода", "Быстрый углевод", "Медленный углевод", "Напиток", "Соус", "Фрукт", "Гриб", "Приправа", "Орехи, семечки", "Молочный белок", "Масла", "Растительный белок"];
+        var colorCategories = ["", "Не рекомендуется", "Не чаще 1 раза в неделю",
+                               "3-4 раза в неделю", "Раз в день", "Можно всегда"];
+                               var amountCategories = ["", "Немного в качестве приправы по вкусу", "Одна столовая ложка", "Горсть", "Пара кусочков", "250-350 мл", "150-250 мл", "1 штука или 250-350 мл"];
+                               
+                               var forbiddenCategories = ["", "Солёные продукты", "Высокое содержание жира", "Копчёное", "Низкая пищевая ценность", "Много уксуса", "Очень острое", "Содержит сахар", "Содержит искуственные добавки"];
+        
         function SektaTable(tableLoadedCallback) {
             
             this.tableData = null;
@@ -195,7 +207,7 @@
             
             if ( cached ) {
                 this.tableData = JSON.parse(cached);
-                tableLoadedCallback();
+                tableLoadedCallback(thisRef);
             }
             
             var address = "http://localhost:8888/readtable.php?p=eLWVBuaWAD";
@@ -210,7 +222,7 @@
                   
                   $.jStorage.set('sektatable', data);
                   if ( ! cached ) {
-                      tableLoadedCallback();
+                      tableLoadedCallback(thisRef);
                   }                  
             });
         }
@@ -248,17 +260,55 @@
             
             return searchResult;
         }
-    
-        var table = new SektaTable(function(){
-           $("#search").attr("placeholder", "Что ты хочешь съесть?");
-           $("#search").removeAttr("disabled");
-           $("#search").focus();
-        });
         
         var searchResults;
         var searchVerticalIndex = -1;
         var upArrow = 38, downArrow = 40;
         
+        var table = new SektaTable(function(thisTable){
+                                   
+           $("#search").removeAttr("disabled");
+                                   
+           var hash = window.location.hash.substr(1);
+           if ( hash.length != 0 ) {
+               var val = hash;
+               
+               $("#search").val(val.substr(0,1).toUpperCase() + val.substr(1));
+               
+               var searchString = val;
+               
+               if ( searchString.length == 0 ) {
+                   return;
+               }
+               
+               var result = thisTable.search(searchString);
+               if ( result.length == 1 ) {
+                   searchResults = result;
+                   onResult(0);
+               } else if ( result.length > 1 ) {
+                   searchVerticalIndex = -1;
+                   searchResults = result;
+                   
+                   $("#table").css("display", "none");
+                   $("#tableSections").css("display", "none");
+                   $("#searchResults").css("display", "block");
+                   $("#answer").css("display", "none");
+                   
+                   for ( var i = 0; i < result.length; ++i ) {
+                   var div = "<div class='searchResult' id='r" + i + "'>" + result[i]["product"][0] + "</div>";
+                   $("#searchResults").append(div);
+                   }
+                   
+                   $(".searchResult").click(function() { onResultClick( $(this) ); });
+               } else {
+                   showIkea(true);
+               }
+           } else {
+               $("#search").attr("placeholder", "Что ты хочешь съесть?");
+               $("#search").focus();
+           }
+        });
+       
         $("#search").keyup(function (e) {
                            
            if ( e.keyCode == downArrow || e.keyCode == upArrow ) {
@@ -273,7 +323,7 @@
                        searchVerticalIndex = 0;
                    }
                }
-           
+                           
                $(".searchResult").each(function(){ $(this).css("background-color", "white"); });
                $("#r" + searchVerticalIndex).css("background-color", "lightgray");
                e.preventDefault();
@@ -282,12 +332,17 @@
                            
            if (e.keyCode == 13) {
                if ( searchVerticalIndex >= 0 ) {
+                   showIkea(false);
                    $("#r" + searchVerticalIndex).click();
                } else if ( $("#search").val().length != 0 ) {
-                   clearSearchResults();
-                   $("#ikea").css("display", "block");
-                   $("#answer").css("display", "block");
-                   displayReturnForTable();
+                   if ( searchResults.length == 0 ) {
+                       clearSearchResults();
+                       showIkea(true);
+                       displayReturnForTable();
+                   } else {
+                       showIkea(false);
+                       $("#r0").click();
+                   }
                }
                return;
            }
@@ -311,7 +366,7 @@
                 
            var result = table.search(searchString);
             
-           if ( ! result ) {
+           if ( result.length == 0 ) {
                return;
            }
                            
@@ -331,27 +386,33 @@
            $(".searchResult").click(function() { onResultClick( $(this) ); });
         });
         
-        var colors = ["", "#e96e5a", "#ff9933", "#cccc33", "#66cc00", "#019323"];
-        var foodCategory = ["", "Животный белок: мясо", "Животный белок: птица", "Животный белок: рыба", "Животный белок: морепродукты", "Овощ", "Ягода", "Быстрый углевод", "Медленный углевод", "Напиток", "Соус", "Фрукт", "Гриб", "Приправа", "Орехи, семечки", "Молочный белок", "Масла", "Растительный белок"];
-        var colorCategories = ["", "Не рекомендуется", "Не чаще 1 раза в неделю",
-                             "3-4 раза в неделю", "Раз в день", "Можно всегда"];
-        var amountCategories = ["", "Немного в качестве приправы по вкусу", "Одна столовая ложка", "Горсть", "Пара кусочков", "250-350 мл", "150-250 мл", "1 штука или 250-350 мл"];
-        
-        var forbiddenCategories = ["", "Солёные продукты", "Высокое содержание жира", "Копчёное", "Низкая пищевая ценность", "Много уксуса", "Очень острое", "Содержит сахар", "Содержит искуственные добавки"];
-        
-        function onResultClick(button) {
-            var id = button.get(0).id;
-            id = id.substr(1);
-            
+        function showIkea(show) {
+            $("#answer").css("display", "block");
+            $("#colorCategory").css("display", show ? "none" : "block");
+            $("#foodCategory").css("display", show ? "none" : "block");
+            $("#imageCategory").css("display", show ? "none" : "block");
+            $("#artefacts").css("display", show ? "none" : "block");
+            $("#info").css("display", show ? "none" : "block");
+            $("#ikea").css("display", show ? "block" : "none");
+            if ( show ) {
+                $("#productName").text($("#search").val());
+                $("#productDescription").text("Уточни у куратора стоит ли это есть");
+            }
+            $("#productName").css("margin-top", show ? "30px" : "75px");
+        }
+    
+        function onResult(id) {
             clearSearchResults();
             
             var name = searchResults[id]["product"][0];
+            window.location.hash = name;
+    
             $("#search").val(name);
             $("#productName").text(name);
-
+            
             var description = searchResults[id]["product"][10];
             $("#productDescription").text(description);
-
+            
             var colorCategory = Number(searchResults[id]["product"][1]);
             $("#colorCategoryName").text(colorCategories[colorCategory]);
             $("#colorCategoryName").css("background-color", colors[colorCategory]);
@@ -366,7 +427,7 @@
             if ( amount.length == 0 ) {
                 $("#amountDiv").css("display", "none");
             } else {
-                $("#amountDiv").css("display", "block");                
+                $("#amountDiv").css("display", "block");
                 $("#amount").attr("src", "./icons/amount" + amount + ".png");
                 $("#amountDescription").text(amountCategories[amount]);
             }
@@ -424,7 +485,7 @@
             } else {
                 $("#vegan").css("display", "block");
             }
-    
+            
             var forbiddenString = searchResults[id]["product"][4];
             $("#forbidden").empty();
             
@@ -439,7 +500,11 @@
             }
         }
     
-    
+        function onResultClick(button) {
+            var id = button.get(0).id;
+            id = id.substr(1);
+            onResult(id);
+        }
     
         function displayReturnForTable() {
          //   $("#tableSections").css("display", "block").empty().append("<span class='tableCategory' id='showTable'>Вернуться к списку продуктов</span>");
@@ -470,12 +535,12 @@
             'g':'п', 'h':'р', 'j':'о', 'k':'л', 'l':'д', ';':'ж', '\'':'э', 'z':'я', 'x':'ч', 'c':'с', 'v':'м', 'b':'и',
             'n':'т',  'm':'ь', ',':'б', '.':'ю', '/':'.'
         };
-
-        $(function() {
+    
+/*        $(function() {
           if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
               $("#ikea").attr("src", "ikeaSmall.png");
           }
-        });
+        });    */
   
       function convertEnglish(str) {
           var res = "";
