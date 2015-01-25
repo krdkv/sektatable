@@ -8,6 +8,11 @@
     <script type="text/javascript" src="jstorage.js"></script>
     <style>
         
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+        
     @media only screen and (max-width: 760px) {
         #some-element { display: none; }
     }
@@ -104,7 +109,7 @@
                     border-color: transparent transparent transparent #007bff; float:right"></span-->
             </div>
             
-            <div style="background-color:white; border-radius:5px; position:relative; left:20px; top:20px; margin-right:40px; padding-bottom:30px;">
+            <div style="background-color:white; border-radius:5px; position:relative; left:20px; top:20px; margin-right:40px; padding-bottom:40px;">
                 
                 <div id="productName" style="font-family:BitterBold; font-size:30px; line-height:33px; color:black; padding-left:20px; padding-right:100px;  padding-top:75px;"></div>
                 
@@ -366,7 +371,7 @@
                 
            var result = table.search(searchString);
             
-           if ( result.length == 0 ) {
+           if ( !result ) {
                return;
            }
                            
@@ -396,9 +401,10 @@
             $("#ikea").css("display", show ? "block" : "none");
             if ( show ) {
                 $("#productName").text($("#search").val());
+                window.location.hash = $("#search").val();
                 $("#productDescription").text("Уточни у куратора стоит ли это есть");
             }
-            $("#productName").css("padding-top", show ? "30px" : "75px");
+            $("#productName").css("padding-top", show ? "20px" : "75px");
         }
     
         function onResult(id) {
