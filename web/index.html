@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru-RU">
+	<head>
+    <meta property="og:locale" content="ru_RU">
+    <meta charset="UTF-8">
+    <title>#Sekta table</title>
+    <script type="text/javascript" src="jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="jstorage.js"></script>
+    <style>
+        
+    @media only screen and (max-width: 760px) {
+        #some-element { display: none; }
+    }
+        
+        @font-face {
+            font-family: Bitter;
+            src: url("Bitter-Regular.otf") format("opentype");
+        }
+
+@font-face {
+    font-family: BitterBold;
+    src: url("Bitter-Bold.otf") format("opentype");
+}
+
+    @font-face {
+        font-family: Nipcen;
+        src: url("OpenSans-Regular.ttf") format("truetype");
+    }
+    
+    #search {
+        border: 2px solid gray;
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        border-radius: 6px;
+    }
+    
+    .searchResult {
+        height:60px; line-height: 60px; background-color:white; margin-top:0px; width:100%; font-family:Bitter; font-size:34px; text-align:left; padding-left:20px; cursor: pointer; cursor: hand; border-bottom: 1px solid gray;
+    }
+    
+    .searchResult:hover {
+        background-color:lightgray;
+    }
+    
+    .tableCategory {
+        margin-right: 40px;
+        border-bottom: 2px black dashed;
+        cursor: pointer;
+        cursor: hand;
+    }
+    
+    .tableCategory.selected {
+        background-color: white;
+    }
+    
+    #table {
+        border-collapse:separate;
+        
+    }
+    
+    td {
+        padding: 15px;
+    }
+    
+    th {
+        font-family:Bitter;
+        font-size:24px;
+        padding: 15px;
+    }
+    
+    .infoElement {
+        margin-top:20px;
+    }
+    
+    </style>
+  </head>
+  <body style="background-image:url('wood.png'); width:100%;">
+    <center>
+        <div style="width:100%;">
+            <input id="search" style = "margin-top:100px; width:60%; height:65px;  font-family:Bitter; font-size:36px; padding-left:20px; outline-width:0; padding-right:60px; background: url(searchIcon.png) no-repeat scroll right 50%; background-color:white;" placeholder="Загружаем табличку..." disabled="disabled"/>
+            <div id="searchResults" style="display:none; height:440px; margin-top:0px; margin-right:auto; margin-left:auto; width:62%; overflow-x:hidden; overflow-y:auto;"></div>
+        </div>
+    </center>
+        
+        <div id="tableSections" style="margin-top:50px; width:90%; font-family:Nipcen; font-size:38px; "></div>
+
+        <div id="answer" style="margin-top:50px; display:none; width:600px; margin-left:auto; margin-right:auto; padding-bottom:100px; box-shadow: 5px 5px 2px #888888; -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none; margin-bottom:100px; background-color:#efefef; height:3000px; position:relative; " unselectable='on' onselectstart='return false;' onmousedown='return false;'>
+            
+            <div id="colorCategory" style="background-color:transparent; position:absolute; height:36px; font-size:24px; top:45px; left:15px; color:white; z-index:100; font-family:Nipcen; text-indent:0px;   overflow:hidden; box-shadow: 2px 2px 1px #888888;">
+                <span id="colorCategoryName" style="background-color:transparent; height:36px; font-size:24px; color:white; z-index:100; font-family:Nipcen; box-shadow: 2px 2px 1px #888888; float:left; padding-left:10px; padding-right:10px;"></span>
+                <!--span id="arrowDown" style="width: 0;
+                    height: 0;
+                    float:right;
+                    box-shadow: 2px 2px 1px #888888;
+                    border-style: solid;
+                    border-width: 36px 0 0 30px;
+                    border-color: transparent transparent transparent #007bff; float:right"></span>
+                <span id="arrowUp" style="width: 0;
+                    height: 0;
+                    float:right;
+                    box-shadow: 2px 2px 1px #888888;
+                    border-style: solid;
+                    border-width: 36px 30px 0 0;
+                    border-color: transparent transparent transparent #007bff; float:right"></span-->
+            </div>
+            
+            <div style="background-color:white; border-radius:5px; position:absolute; left:20px; top:20px; right:20px; bottom:20px; z-index:90;">
+                
+                <div id="productName" style="font-family:BitterBold; font-size:30px; line-height:33px; color:black; margin-left:20px; margin-right:100px;  margin-top:75px;"></div>
+                
+                <div id="productDescription" style="font-family:Bitter; font-size:18px; color:black; margin-left:20px; margin-right:20px; margin-top:8px;"></div>
+                
+                <img src="icons/food1.png" id="imageCategory" style="position:absolute; top:15px; right:20px; max-height:64px; max-width:64px; z-index:100;"/>
+                
+                <center>
+                    <div id="artefacts" style="margin-top:35px; margin-left:40px; margin-right:40px;">
+                        
+                        <div id="amountDiv">
+                            <img id="amount" src="icons/amount1.png" style="max-height:64px; max-width:64px;"/>
+                            <div style="font-size:15px; color:black;">
+                                <span style="font-family:Bitter">Рекомендуемый объем порции:</span><br/>
+                                <span style="font-family:BitterBold" id="amountDescription"></span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top:35px;" id="gluten">
+                            <img id="amount" src="icons/food8.png" style="max-height:64px; max-width:64px;"/>
+                            <div style="font-size:15px; color:black; font-family:Bitter">Содержит или может <br/>содержать глютен</div>
+                        </div>
+                        
+                        <div style="margin-top:35px;" id="vegan">
+                            <img id="amount" src="icons/vegan.png" style="max-height:64px; max-width:64px;"/>
+                            <div style="font-size:15px; color:#019323; font-family:Bitter">Vegan & Detox</div>
+                        </div>
+                        
+                        <div id="forbidden"></div>
+                    </div>
+                    
+                    <div id="info" style="font-size:15px; color:black; margin-top:35px;">
+                        <div class="infoElement">
+                            <span style="font-family:Bitter">Гликемический индекс: </span>
+                            <span style="font-family:BitterBold" id="gIndex"></span>
+                        </div>
+                        <div class="infoElement">
+                            <span style="font-family:Bitter">Калорийность: </span>
+                            <span style="font-family:BitterBold" id="calory"></span>
+                        </div>
+                        <div class="infoElement">
+                            <span style="font-family:Bitter">Белки: </span>
+                            <span style="font-family:BitterBold" id="protein"></span>
+                        </div>
+                        <div class="infoElement">
+                            <span style="font-family:Bitter">Жиры: </span>
+                            <span style="font-family:BitterBold" id="fats"></span>
+                        </div>
+                        <div class="infoElement">
+                            <span style="font-family:Bitter">Углеводы: </span>
+                            <span style="font-family:BitterBold" id="carbs"></span>
+                        </div>
+                    </div>
+                </center>
+            
+            <!--
+             -->
+            
+            <!--
+             width: 0;
+             height: 0;
+             border-style: solid;
+             border-width: 200px 0 0 200px;
+             border-color: transparent transparent transparent #007bff;
+             -->
+            
+            </div>
+            
+            
+        </div>
+
+        <div style="margin-top:90px; margin-bottom:100px;">
+            <table id="table" style="width:90%; font-family:Nipcen; font-size:26px; box-shadow: 5px 5px 2px #888888; background-color:gray;"></table>
+        </div>
+        
+
+    <!--/center-->
+</body>
+
+    <script id='script'>
+        
+        function SektaTable(tableLoadedCallback) {
+            
+            this.tableData = null;
+            
+            var cached = $.jStorage.get('sektatable');
+            var thisRef = this;
+            
+            if ( cached ) {
+                this.tableData = JSON.parse(cached);
+                tableLoadedCallback();
+            }
+            
+            var address = "http://localhost:8888/readtable.php?p=eLWVBuaWAD";
+            
+            $.get(address, function(data){
+                  if ( ! data ) {
+                      $("#search").attr("placeholder", "Хьюстон, у нас проблемы :(");
+                      return;
+                  }
+                  
+                  thisRef.tableData = JSON.parse(data);
+                  
+                  $.jStorage.set('sektatable', data);
+                  if ( ! cached ) {
+                      tableLoadedCallback();
+                  }                  
+            });
+        }
+    
+        SektaTable.prototype.search = function(product) {
+            if ( ! this.tableData ) {
+                console.log("Searching for product before loading table");
+                return;
+            }
+            
+            if ( product.length == 0 ) {
+                return;
+            }
+            
+            product = product.toLowerCase();
+            var searchResult = new Array();
+            
+            for ( var category in this.tableData ) {
+                var numberOfProducts = this.tableData[category].length;
+                for ( var productIndex = 1; productIndex < numberOfProducts; ++productIndex ) {
+                    var productName = this.tableData[category][productIndex][0];
+                    productName = productName.toLowerCase();
+                    
+                    if ( product.length > 4 ) {
+                        if ( productName.search(product) != -1 ) {
+                            searchResult.push({"category":category, "product":this.tableData[category][productIndex]});
+                        }
+                    } else {
+                        if ( productName.search(product) == 0 ) {
+                            searchResult.push({"category":category, "product":this.tableData[category][productIndex]});
+                        }
+                    }
+                }
+            }
+            
+            return searchResult;
+        }
+    
+        var table = new SektaTable(function(){
+           $("#search").attr("placeholder", "Что ты хочешь съесть?");
+           $("#search").removeAttr("disabled");
+           $("#search").focus();
+        });
+        
+        var searchResults;
+        var searchVerticalIndex = -1;
+        var upArrow = 38, downArrow = 40;
+        
+        $("#search").keyup(function (e) {
+                           
+           if ( e.keyCode == downArrow || e.keyCode == upArrow ) {
+               if ( e.keyCode == downArrow ) {
+                   searchVerticalIndex++;
+                   if ( searchVerticalIndex > searchResults.length-1 ) {
+                       searchVerticalIndex = searchResults.length-1;
+                   }
+               } else if ( e.keyCode == upArrow ) {
+                   searchVerticalIndex--;
+                   if ( searchVerticalIndex < 0 ) {
+                       searchVerticalIndex = 0;
+                   }
+               }
+           
+               $(".searchResult").each(function(){ $(this).css("background-color", "white"); });
+               $("#r" + searchVerticalIndex).css("background-color", "lightgray");
+               e.preventDefault();
+               return;
+           }
+                           
+           if (e.keyCode == 13) {
+               if ( searchVerticalIndex >= 0 ) {
+                   $("#r" + searchVerticalIndex).click();
+               } else if ( $("#search").val().length != 0 ) {
+                   clearSearchResults();
+                   $("#ikea").css("display", "block");
+                   $("#answer").css("display", "block");
+                   displayReturnForTable();
+               }
+               return;
+           }
+           
+           if ( e.ctrlKey || e.metaKey || e.keyCode == 91 || e.keyCode == 65 ) {
+               return;
+           }
+                           
+           clearSearchResults();
+                           
+           var val = $("#search").val();
+           val = convertEnglish(val);
+           
+           $("#search").val(val.substr(0,1).toUpperCase() + val.substr(1));
+           
+           var searchString = val;
+           
+           if ( searchString.length == 0 ) {
+               return;
+           }
+                
+           var result = table.search(searchString);
+            
+           if ( ! result ) {
+               return;
+           }
+                           
+           searchVerticalIndex = -1;
+           searchResults = result;
+                           
+           $("#table").css("display", "none");
+           $("#tableSections").css("display", "none");
+           $("#searchResults").css("display", "block");
+           $("#answer").css("display", "none");
+           
+           for ( var i = 0; i < result.length; ++i ) {
+               var div = "<div class='searchResult' id='r" + i + "'>" + result[i]["product"][0] + "</div>";
+               $("#searchResults").append(div);
+           }
+           
+           $(".searchResult").click(function() { onResultClick( $(this) ); });
+        });
+        
+        var colors = ["", "#e96e5a", "#ff9933", "#cccc33", "#66cc00", "#019323"];
+        var foodCategory = ["", "Животный белок: мясо", "Животный белок: птица", "Животный белок: рыба", "Животный белок: морепродукты", "Овощ", "Ягода", "Быстрый углевод", "Медленный углевод", "Напиток", "Соус", "Фрукт", "Гриб", "Приправа", "Орехи, семечки", "Молочный белок", "Масла", "Растительный белок"];
+        var colorCategories = ["", "Не рекомендуется", "Не чаще 1 раза в неделю",
+                             "3-4 раза в неделю", "Раз в день", "Можно всегда"];
+        var amountCategories = ["", "Немного в качестве приправы по вкусу", "Одна столовая ложка", "Горсть", "Пара кусочков", "250-350 мл", "150-250 мл", "1 штука или 250-350 мл"];
+        
+        var forbiddenCategories = ["", "Солёные продукты", "Высокое содержание жира", "Копчёное", "Низкая пищевая ценность", "Много уксуса", "Очень острое", "Содержит сахар", "Содержит искуственные добавки"];
+        
+        function onResultClick(button) {
+            var id = button.get(0).id;
+            id = id.substr(1);
+            
+            clearSearchResults();
+            
+            var name = searchResults[id]["product"][0];
+            $("#search").val(name);
+            $("#productName").text(name);
+
+            var description = searchResults[id]["product"][10];
+            $("#productDescription").text(description);
+
+            var colorCategory = Number(searchResults[id]["product"][1]);
+            $("#colorCategoryName").text(colorCategories[colorCategory]);
+            $("#colorCategoryName").css("background-color", colors[colorCategory]);
+            
+            $("#answer").css("display", "block");
+            
+            var foodCategory = Number(searchResults[id]["product"][2]);
+            $("#imageCategory").attr("src", "./icons/food" + foodCategory + ".png");
+            $("#imageCategory").attr("alt", colorCategories[colorCategory]);
+            
+            var amount = searchResults[id]["product"][3];
+            if ( amount.length == 0 ) {
+                $("#amountDiv").css("display", "none");
+            } else {
+                $("#amountDiv").css("display", "block");                
+                $("#amount").attr("src", "./icons/amount" + amount + ".png");
+                $("#amountDescription").text(amountCategories[amount]);
+            }
+            
+            var protein = searchResults[id]["product"][12];
+            if ( protein.length == 0 ) {
+                $("#protein").parent().css("display", "none");
+            } else {
+                $("#protein").parent().css("display", "block");
+                $("#protein").text(protein);
+            }
+            
+            var fats = searchResults[id]["product"][13];
+            if ( fats.length == 0 ) {
+                $("#fats").parent().css("display", "none");
+            } else {
+                $("#fats").parent().css("display", "block");
+                $("#fats").text(fats);
+            }
+            
+            var carbs = searchResults[id]["product"][14];
+            if ( carbs.length == 0 ) {
+                $("#carbs").parent().css("display", "none");
+            } else {
+                $("#carbs").parent().css("display", "block");
+                $("#carbs").text(carbs);
+            }
+            
+            var calory = searchResults[id]["product"][11];
+            if ( calory.length == 0 ) {
+                $("#calory").parent().css("display", "none");
+            } else {
+                $("#calory").parent().css("display", "block");
+                $("#calory").text(calory);
+            }
+            
+            var gIndex = searchResults[id]["product"][16];
+            if ( gIndex.length == 0 ) {
+                $("#gIndex").parent().css("display", "none");
+            } else {
+                $("#gIndex").parent().css("display", "block");
+                $("#gIndex").text(gIndex);
+            }
+            
+            var gluten = Number(searchResults[id]["product"][5]);
+            if ( gluten == 0 ) {
+                $("#gluten").css("display", "none");
+            } else {
+                $("#gluten").css("display", "block");
+            }
+            
+            var vegan = Number(searchResults[id]["product"][6]);
+            if ( vegan == 0 || colorCategory == 1 ) {
+                $("#vegan").css("display", "none");
+            } else {
+                $("#vegan").css("display", "block");
+            }
+    
+            var forbiddenString = searchResults[id]["product"][4];
+            $("#forbidden").empty();
+            
+            if ( forbiddenString.length == 0 ) {
+                $("#forbidden").css("display", "none");
+            } else {
+                $("#forbidden").css("display", "block");
+                var forbiddenValues = forbiddenString.split(",");
+                for ( var i = 0; i < forbiddenValues.length; ++i ) {
+                    $("#forbidden").append( "<div style='margin-top:35px'><img src='icons/no" + forbiddenValues[i] + ".png' style='max-height:64px; max-width:64px;'><div style='font-size:15px;color:black;font-family:Bitter'>" + forbiddenCategories[forbiddenValues[i]] + "</div></div>" );
+                }
+            }
+        }
+    
+    
+    
+        function displayReturnForTable() {
+         //   $("#tableSections").css("display", "block").empty().append("<span class='tableCategory' id='showTable'>Вернуться к списку продуктов</span>");
+         //   $("#showTable").click(function() {
+           //                       $("#answer").css("display", "none");
+             //                     $("#table").css("display", "block");
+               //                   var sections = table.getTableSections();
+                 //                 $("#tableSections").empty();
+                   //               for ( var i = 0; i < sections.length; ++i ) {
+                     //             $("#tableSections").append("<span class='tableCategory' id='c" + i +"'>" + sections[i] + "</span>");
+                       //           }
+                         //         $("#c0").addClass("selected");
+                           //       $(".tableCategory").click(function() { onCategoryClick( $(this) ); });
+                             //     presentTable(table, 0);
+                               //   $("#search").val("");
+                                 // });
+        }
+        
+        function clearSearchResults() {
+            $("#searchResults").empty();
+            $("#searchResults").css("display", "none");
+        }
+    
+        var conversion = { 'Q':'Й', 'W':'Ц', 'E':'У', 'R':'К', 'T':'Е', 'Y':'Н', 'U':'Г', 'I':'Ш', 'O':'Щ', 'P':'З', '[':'Х',
+            ']':'Ъ', 'A':'Ф', 'S':'Ы', 'D':'В', 'F':'А', 'G':'П', 'H':'Р', 'J':'О', 'K':'Л', 'L':'Д', ';':'Ж', '\'':'Э', 'Z':'Я',
+            'X':'Ч', 'C':'С', 'V':'М', 'B':'И', 'N':'Т', 'M':'Ь', ',':'Б', '.':'Ю', '/':'.', 'q':'й', 'w':'ц', 'e':'у', 'r':'к',
+            't':'е', 'y':'н', 'u':'г', 'i':'ш', 'o':'щ', 'p':'з', '[':'х', ']':'ъ', 'a':'ф', 's':'ы', 'd':'в', 'f':'а',
+            'g':'п', 'h':'р', 'j':'о', 'k':'л', 'l':'д', ';':'ж', '\'':'э', 'z':'я', 'x':'ч', 'c':'с', 'v':'м', 'b':'и',
+            'n':'т',  'm':'ь', ',':'б', '.':'ю', '/':'.'
+        };
+
+        $(function() {
+          if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+              $("#ikea").attr("src", "ikeaSmall.png");
+          }
+        });
+  
+      function convertEnglish(str) {
+          var res = "";
+          
+          for ( var i = 0; i < str.length; ++i ) {
+              res += (str[i] in conversion)? conversion[str[i]] : str[i];
+          }
+          return res;
+      }
+
+    </script>
+</html>
