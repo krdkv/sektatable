@@ -86,8 +86,10 @@
             <div id="searchResults" style="display:none; height:440px; margin-top:0px; margin-right:auto; margin-left:auto; width:62%; overflow-x:hidden; overflow-y:auto;"></div>
         </div>
     </center>
-        
-        <div id="tableSections" style="margin-top:50px; width:90%; font-family:Nipcen; font-size:38px; "></div>
+    
+        <center>
+            <div id="tableSections" style="margin-top:40px; width:80%; font-family:Bitter; line-height:38px ; font-size:25px; "></div>
+        </center>
 
         <div id="answer" style="margin-top:50px; display:none; width:600px; margin-left:auto; margin-right:auto; padding-bottom:50px; box-shadow: 5px 5px 2px #888888; -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none; margin-bottom:100px; background-color:#efefef; position:relative;" unselectable='on' onselectstart='return false;' onmousedown='return false;'>
             
@@ -111,7 +113,7 @@
             
             <div style="background-color:white; border-radius:5px; position:relative; left:20px; top:20px; margin-right:40px; padding-bottom:40px;">
                 
-                <div id="productName" style="font-family:BitterBold; font-size:30px; line-height:33px; color:black; padding-left:20px; padding-right:100px;  padding-top:75px;"></div>
+                <div id="productName" style="font-family:BitterBold; font-size:30px; color:black; padding-left:20px; padding-right:140px;  overflow:auto; padding-top:75px;"></div>
                 
                 <div id="productDescription" style="font-family:Bitter; font-size:18px; color:black; padding-left:20px; padding-right:20px; padding-top:8px;"></div>
                 
@@ -201,11 +203,14 @@
                                "3-4 раза в неделю", "Раз в день", "Можно всегда"];
                                var amountCategories = ["", "Немного в качестве приправы по вкусу", "Одна столовая ложка", "Горсть", "Пара кусочков", "250-350 мл", "150-250 мл", "1 штука или 250-350 мл"];
                                
-                               var forbiddenCategories = ["", "Солёные продукты", "Высокое содержание жира", "Копчёное", "Низкая пищевая ценность", "Много уксуса", "Очень острое", "Содержит сахар", "Содержит искуственные добавки"];
-        
+        var forbiddenCategories = ["", "Солёные продукты", "Высокое содержание жира", "Копчёное", "Низкая пищевая ценность", "Много уксуса", "Очень острое", "Содержит сахар", "Содержит искуственные добавки"];
+        var detoxKey = "Detox & Vegan";
+       
         function SektaTable(tableLoadedCallback) {
             
             this.tableData = null;
+            
+            this.tableSections = null;
             
             var cached = $.jStorage.get('sektatable');
             var thisRef = this;
@@ -265,12 +270,40 @@
             
             return searchResult;
         }
+    
+        SektaTable.prototype.productsForSection = function(section) {
+            if ( section === detoxKey ) {
+                var result = new Array();
+                for ( var category in this.tableData ) {
+                    var numberOfProducts = this.tableData[category].length;
+                    for ( var productIndex = 1; productIndex < numberOfProducts; ++productIndex ) {
+                        var isDetox = Number(this.tableData[category][productIndex][6]);
+                        if ( isDetox != 0 ) {
+                            result.push(this.tableData[category][productIndex]);
+                        }
+                    }
+                }
+            } else {
+                var count = this.tableData[section].length;
+                return this.tableData[section].splice(1, count-1);
+            }
+        }
         
         var searchResults;
         var searchVerticalIndex = -1;
         var upArrow = 38, downArrow = 40;
+        var selectedCategory = 0;
         
         var table = new SektaTable(function(thisTable){
+           
+           thisTable.sections = new Array();
+                                   
+           for ( var category in thisTable.tableData ) {
+               thisTable.sections.push(category);
+           }
+           thisTable.sections.push(detoxKey);
+            
+           displayCategories(thisTable);
                                    
            $("#search").removeAttr("disabled");
            $("#search").attr("placeholder", "Что ты хочешь съесть?");
@@ -390,6 +423,22 @@
            
            $(".searchResult").click(function() { onResultClick( $(this) ); });
         });
+        
+        function displayCategories(table) {
+            $("#tableSections").empty();
+            for ( var i = 0; i < table.sections.length; ++i ) {
+                var color = "black";
+                if ( table.sections[i] === detoxKey ) {
+                    color = "#019323";
+                }
+                $("#tableSections").append("<span id='c" + i + "' class='tableCategory' style='color:" + color + "'>" + table.sections[i] + "</span>");
+            }
+            $("#c" + selectedCategory).addClass("selected");
+            $(".tableCategory").click(function(){
+                  $(".tableCategory").each(function(){ $(this).removeClass("selected"); });
+                  $(this).addClass("selected");
+            });
+        }
         
         function showIkea(show) {
             $("#answer").css("display", "block");
