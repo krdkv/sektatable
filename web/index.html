@@ -90,10 +90,10 @@
         </div>
     </center>
     
-        <center>
+        <!--center>
             <div id="tableSections" style="margin-top:40px; width:80%; font-family:Bitter; line-height:38px ; font-size:25px; "></div>
-            <div id="table" style="margin-top:40px; margin-bottom:60px; display:none;"></div>
-        </center>
+            <div id="table" style="margin-top:40px; margin-bottom:60px; display:none; position:relative;"></div>
+        </center-->
 
         <div id="answer" style="margin-top:50px; display:none; width:600px; margin-left:auto; margin-right:auto; padding-bottom:50px; box-shadow: 5px 5px 2px #888888; -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none; margin-bottom:100px; background-color:#efefef; position:relative;" unselectable='on' onselectstart='return false;' onmousedown='return false;'>
             
@@ -205,7 +205,18 @@
         var forbiddenCategories = ["", "Солёные продукты", "Высокое содержание жира", "Копчёное", "Низкая пищевая ценность", "Много уксуса", "Очень острое", "Содержит сахар", "Содержит искуственные добавки"];
         var detoxKey = "Detox & Vegan";
         var SEKTATABLE = null;
-       
+        
+        String.prototype.width = function(font) {
+            var f = font || '12px arial',
+            o = $('<div>' + this + '</div>')
+            .css({'font-family': 'Bitter', 'font-size':'24px', 'padding':'10px',  'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden'})
+            .appendTo($('body')),
+            w = o.width();
+            
+            o.remove();
+            return w;
+        }
+        
         function SektaTable(tableLoadedCallback) {
             
             this.tableData = null;
@@ -220,7 +231,7 @@
                 tableLoadedCallback(thisRef);
             }
             
-            var address = "http://localhost:8888/readtable.php?p=eLWVBuaWAD";
+            var address = "http://sektaschool.ru/table/readtable.php?p=eLWVBuaWAD";
             
             $.get(address, function(data){
                   if ( ! data ) {
@@ -308,16 +319,11 @@
                 result[colorKey].push(product);
             }
             
-            console.log(result);
-            
-            var formattedResult = {};
-            
-            var formattedResultIndex = 0;
+            var formattedResult = new Array();
             
             for ( var groupIndex = colorCategories.length-1; groupIndex >= 1; --groupIndex ) {
                 if ( result[groupIndex] ) {
-                    formattedResult[formattedResultIndex] = {"groupName": colorCategories[groupIndex], "groupColor": colors[groupIndex], "products": result[groupIndex]};
-                    ++formattedResultIndex;
+                    formattedResult.push({"groupName": colorCategories[groupIndex], "groupColor": colors[groupIndex], "products": result[groupIndex]});
                 }
             }
             
@@ -490,25 +496,49 @@
         function onCategory(table, category) {
             $(".tableCategory").each(function(){ $(this).removeClass("selected"); });
             $("#c" + category).addClass("selected");
+            
             var section = table.sections[category];
             var products = table.productsForSection(section);
             
-            console.log(products); return;
-            
             $("#table").empty();
             $("#table").css("display", "block");
-            $("#table").attr("category", category);
             $("#answer").css("display", "none");
-            for ( var i = 0; i < products.length; ++i ) {
-                $("#table").append( tableEntryHTMLForProduct(products[i], i) );
+            
+            for ( var groupIndex = 0; groupIndex < products.length; ++groupIndex ) {
+                
+                var groupName = products[groupIndex]["groupName"];
+                var groupColor = products[groupIndex]["groupColor"];
+                var groupProducts = products[groupIndex]["products"];
+                
+                var output =
+                    "<div class='tableGroup' style='width:800px; margin-bottom:40px; position:relative;'>" +
+                        "<div style='position:absolute; height:100%; float:left; width:15px; background-color:" + groupColor + ";'></div>" +
+                        "<div style='position:absolute; height:36px; font-size:24px; color:white; z-index:100; font-family:Nipcen; float:left; padding-left:15px; padding-right:10px; left:0px; top:0px; background-color:" + groupColor + ";'>" +  groupName + "</div>" +
+                       "<div style='float:left; position:relative; padding-left:30px; margin-top:50px; padding-right:30px;'>";
+                
+                var currentY = 0, currentX = 0;
+                var rowWidth = 740;
+                
+                for ( var productKey in groupProducts ) {
+                    var product = groupProducts[productKey];
+                    
+                    var width = product[0].width();
+                    if ( currentX + width + 15 < rowWidth ) {
+                        output += "<div style='box-shadow: 2px 2px 1px #888888; line-height:20px; height:40px; overflow:ellipsis; position:absolute; background-color:white; font-family:Bitter; font-size:24px; padding:10px; left:" + currentX + "; top:" + currentY + ";'>" + product[0] + "</div>";
+                        currentX += width + 15;
+                    } else {
+                        currentX = 0;
+                        currentY += 100;
+                        output += "<div style='box-shadow: 2px 2px 1px #888888; line-height:20px; height:40px; height:48px; overflow:ellipsis; position:absolute; background-color:white; font-family:Bitter; font-size:24px; padding:10px; left:" + currentX + "; top:" + currentY + ";'>" + product[0] + "</div>";
+                    }
+                    
+//                    output += "<span style='box-shadow: 2px 2px 1px #888888; position:relative; margin-right:10px; line-height:60px; background-color:white; font-family:Bitter; font-size:24px; padding:10px;'>" + product[0] + "</span>";
+                }
+                
+                output += "</div></div>";
+                
+                $("#table").append(output);
             }
-            var thisTable = table;
-            $(".tableEntry").click(function(){
-                var entryId = $(this).attr("id").substr(1);
-                var sectionName = table.sections[$("#table").attr("category")];
-                   console.log(sectionName);
-                displayResult(table.productsForSection(sectionName)[entryId]);
-            });
         }
         
         function showIkea(show) {
