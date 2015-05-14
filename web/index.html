@@ -217,7 +217,36 @@
             o.remove();
             return w;
         }
-        
+    
+        function removeDiacritics (s) {
+            var r = s.toLowerCase();
+            r = r.replace("ё", "е");
+            return r;
+        };
+    
+        function productCorrespondsSearchString(product, searchString) {
+            
+            if ( ! product ) {
+                return false;
+            }
+            
+            product = removeDiacritics(product);
+            searchString = removeDiacritics(searchString);
+            
+            var searchIndex = product.search(searchString);
+            if ( searchIndex == -1 ) {
+                return false;
+            }
+            
+            if ( searchString.length > 4 ) {
+                return true;
+            } else if ( searchIndex == 0 ) {
+                return true;
+            }
+            
+            return false;
+        }
+    
         function SektaTable(tableLoadedCallback) {
             
             this.tableData = null;
@@ -270,19 +299,9 @@
                 var numberOfProducts = this.tableData[category].length;
                 for ( var productIndex = 1; productIndex < numberOfProducts; ++productIndex ) {
                     var productName = this.tableData[category][productIndex][0];
-                    if ( productName ) {
-                        productName = productName.toLowerCase();
-                        
-                        if ( product.length > 4 ) {
-                            if ( productName.search(product) != -1 ) {
-                                searchResult.push({"category":category, "product":this.tableData[category][productIndex]});
-                            }
-                        } else {
-                            if ( productName.search(product) == 0 ) {
-                                searchResult.push({"category":category, "product":this.tableData[category][productIndex]});
-                            }
-                        }
-                    }                    
+                    if ( productCorrespondsSearchString(productName, product) ) {
+                        searchResult.push({"category":category, "product":this.tableData[category][productIndex]});
+                    }
                 }
             }
             
